@@ -254,15 +254,19 @@ def correlation_detectable(n: int, power: float = 0.8, alpha: float = 0.05) -> f
 def simulate_design_power(n_models: int, n_cwes: int, tasks_per_cwe: int, n_samples: int, *, beta: float,
                           base_rate: float = 0.35, sd_model: float = 0.6, sd_cwe: float = 0.8, sd_task: float = 0.7,
                           sd_cell: float = 0.4, sims: int = 300, perms: int = 400, seed: int = 0,
-                          alpha: float = 0.05) -> float:
+                          alpha: float = 0.05, with_slope: bool = False):
     """
     Power of the within-model, within-class slope test (twoway_fe on model x CWE cells)
     when log-odds of a vulnerable answer fall by `beta` per SD of knowledge.
     Data are generated from a logistic model with random model, class, task and cell effects.
+
+    with_slope=True returns (power, mean slope): the mean of the fixed-effects slopes over the
+    simulated data sets, i.e. the effect size in the metric of the test itself (change in the
+    introduction rate per SD of knowledge).
     """
     rng = np.random.default_rng(seed)
     logit0 = math.log(base_rate / (1 - base_rate))
-    hits = 0
+    hits, slopes = 0, []
     for s in range(sims):
         k = rng.normal(size=(n_models, n_cwes)) + 0.5 * rng.normal(size=(n_models, 1)) + 0.5 * rng.normal(size=(1, n_cwes))
         k = (k - k.mean()) / k.std()
@@ -274,4 +278,5 @@ def simulate_design_power(n_models: int, n_cwes: int, tasks_per_cwe: int, n_samp
         y = rng.binomial(n_samples, p) / n_samples
         res = twoway_fe(y.mean(axis=2), k, B=perms, seed=seed + s)
         hits += res["p"] < alpha
-    return hits / sims
+        slopes.append(res["beta"])
+    return (hits / sims, float(np.mean(slopes))) if with_slope else hits / sims

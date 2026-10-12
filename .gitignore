@@ -1,6 +1,7 @@
 # Manuscript and submission files: kept out of the repository
 *.docx
 *.doc
+*.wbk
 ~$*
 /7B_Journal_paper*
 /tools/manuscript/*

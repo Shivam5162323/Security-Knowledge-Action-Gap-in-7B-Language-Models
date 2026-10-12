@@ -67,7 +67,7 @@ def heatmap(mat, rows, cols, title, cbar, out, stem, synthetic, vmin=0.0, vmax=1
     _save(fig, out, stem, synthetic)
 
 
-def scatter_by_cwe(K, IR, models, cwes, tier, out, synthetic):
+def scatter_by_cwe(K, IR, models, cwes, tier, out, synthetic, title=True, stem="fig4_knowledge_vs_introduction"):
     n = len(cwes)
     ncol = min(4, n)
     nrow = int(np.ceil(n / ncol))
@@ -76,6 +76,8 @@ def scatter_by_cwe(K, IR, models, cwes, tier, out, synthetic):
         if k >= n:
             ax.set_visible(False)
             continue
+        if k + ncol >= n:                     # no panel below this one: it carries the x tick labels itself
+            ax.tick_params(labelbottom=True)
         for t, color, marker, label in (("small", BLUE, "o", "≤4B models"), ("7b", ORANGE, "s", "~7B models")):
             m = tier == t
             ax.scatter(K[m, k], IR[m, k], s=26, c=color, marker=marker, edgecolors="white", linewidths=0.8,
@@ -85,13 +87,20 @@ def scatter_by_cwe(K, IR, models, cwes, tier, out, synthetic):
         ax.set_ylim(-0.05, 1.05)
         ax.axhline(0, color=GRID, lw=0.6, zorder=1)
         ax.grid(color=GRID, lw=0.5, zorder=0)
-    fig.supxlabel("Declarative knowledge K (chance-corrected)", fontsize=8, color=INK2)
+    fig.supxlabel("Knowledge K (0 = guessing, 1 = perfect)", fontsize=8, color=INK2)
     fig.supylabel("Baseline introduction rate", fontsize=8, color=INK2)
-    fig.legend(loc="upper right", ncol=2, fontsize=7, bbox_to_anchor=(0.99, 1.02))
-    fig.suptitle("Knowledge vs behaviour: one point per model, one panel per class", x=0.02, ha="left", fontsize=9,
-                 weight="bold", color=INK)
+    if n < nrow * ncol:                       # an empty cell of the grid holds the legend
+        spare = axes.ravel()[-1]
+        spare.set_visible(True)
+        spare.axis("off")
+        spare.legend(*axes[0, 0].get_legend_handles_labels(), loc="center", fontsize=7)
+    else:
+        fig.legend(loc="upper right", ncol=2, fontsize=7, bbox_to_anchor=(0.99, 1.02))
+    if title:
+        fig.suptitle("Knowledge vs behaviour: one point per model, one panel per class", x=0.02, ha="left", fontsize=9,
+                     weight="bold", color=INK)
     fig.tight_layout()
-    _save(fig, out, "fig4_knowledge_vs_introduction", synthetic)
+    _save(fig, out, stem, synthetic)
 
 
 def _ci(s: str):
@@ -147,7 +156,7 @@ def forest(t13, out, synthetic):
     _save(fig, out, "fig6_condition_contrasts", synthetic)
 
 
-def gap(t8, out, synthetic):
+def gap(t8, out, synthetic, title=True, stem="fig3_residual_gap"):
     fig, ax = plt.subplots(figsize=(7.0, 2.7))
     x = np.arange(len(t8))
     w = 0.36
@@ -165,11 +174,12 @@ def gap(t8, out, synthetic):
     ax.set_ylim(0, 1.25)                      # headroom so the legend clears the tallest bar label
     ax.set_yticks(np.arange(0, 1.01, 0.2))
     ax.set_ylabel("Baseline introduction rate")
-    ax.set_title("Residual gap: introduction rate by whether the model recognises the weakness", loc="left")
+    if title:
+        ax.set_title("Residual gap: introduction rate by whether the model recognises the weakness", loc="left")
     ax.grid(axis="y", color=GRID, lw=0.5, zorder=0)
     ax.tick_params(axis="x", length=0)
     ax.legend(loc="upper left", fontsize=7, ncol=2)
-    _save(fig, out, "fig3_residual_gap", synthetic)
+    _save(fig, out, stem, synthetic)
 
 
 def threshold(t11, out, synthetic):
@@ -197,8 +207,8 @@ def pipeline(out, manifest, n_models, n_tasks, n_cwes, synthetic):
          f"{n_tasks} tasks in {n_cwes} CWE classes; each task has a functional test,\nan attack test and a secure / insecure reference solution"),
         ("Detector validation",
          "Semgrep rules and attack tests must separate the two reference\nsolutions of a task before their verdicts are used"),
-        ("Knowledge battery (scored automatically)",
-         "multiple choice · recognition of insecure vs secure code (class not named)\n· rubric-scored explanation · repair (reported separately)"),
+        ("Knowledge battery",
+         "multiple choice · recognition (class not named) · repair: scored automatically\nexplanation: concept rubric and a blind 0–2 score by the scorer model"),
         ("Generation",
          f"{n_models} models × {n_tasks} tasks × {len(conds)} conditions × {n_s} samples\nbaseline · reminder · irrelevant notes · dense RAG · hybrid RAG · oracle RAG"),
         ("Automatic judgement of every answer",
@@ -227,7 +237,7 @@ def pipeline(out, manifest, n_models, n_tasks, n_cwes, synthetic):
 def make_all(out: Path, *, models, cwes, K, IRc, IRt, rec, tasks, task_cwe, tables, tier, synthetic, manifest) -> None:
     out.mkdir(parents=True, exist_ok=True)
     pipeline(out, manifest, len(models), len(tasks), len(cwes), synthetic)
-    heatmap(K["K"], models, cwes, "Declarative knowledge K by model and class", "K (0 = guessing, 1 = perfect)",
+    heatmap(K["K"], models, cwes, "Knowledge K by model and class", "K (0 = guessing, 1 = perfect)",
             out, "fig2a_knowledge_heatmap", synthetic, vmin=0.0, vmax=1.0)
     heatmap(IRc, models, cwes, "Baseline vulnerability introduction rate", "share of vulnerable answers",
             out, "fig2b_introduction_heatmap", synthetic)

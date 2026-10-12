@@ -107,7 +107,7 @@ for 36% of tasks (dense) and 39% (hybrid); the oracle does so for 100%. This is 
 property of the retriever, measured without any model, and is the reason the
 oracle condition is reported as an upper bound rather than as the result.
 
-**Knowledge battery** (greedy decoding; scored automatically)
+**Knowledge battery** (greedy decoding; scored automatically, except the explanation's second score)
 
 | Probe | What it measures | Score |
 |---|---|---|
@@ -250,3 +250,9 @@ tests/            test_pipeline.py
 tools/            make_notebook.py; manuscript/paper_extra.py (extra tables and figures)
 runs/paper/       the run reported in the paper: prompts, model outputs, verdicts, audit, analysis
 ```
+
+## Licence
+
+The code, the tasks, the rules and the study's own outputs are released under the MIT
+licence (`LICENSE`). The retrieval corpus is text from the MITRE CWE catalogue and from
+the National Vulnerability Database, which keep their own terms; see `data/NOTICE.md`.

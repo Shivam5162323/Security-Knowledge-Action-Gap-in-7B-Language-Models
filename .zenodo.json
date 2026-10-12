@@ -1,0 +1,29 @@
+{
+  "title": "Security knowledge–action gap in small language models: Pipeline, tasks, model outputs and analysis",
+  "description": "Materials of a controlled study of nine open-weight language models of 2 to 7 billion parameters and seven CWE weakness classes: 56 code-generation tasks with executable functional tests, attack tests and secure and insecure reference solutions; the knowledge battery; Semgrep rules; the frozen retrieval corpus and retrieval results; the pipeline and analysis code; all 15,120 generated programs with their automatic verdicts; the blind audit by a scorer model; and the analysis tables and figures.",
+  "upload_type": "software",
+  "access_right": "open",
+  "license": "MIT",
+  "creators": [
+    {
+      "name": "Shivam",
+      "affiliation": "Department of Computer Science and Engineering, Chandigarh University, Mohali, Punjab, India"
+    },
+    {
+      "name": "Singh, Ranjit",
+      "affiliation": "Department of Computer Science and Engineering, Chandigarh University, Mohali, Punjab, India"
+    },
+    {
+      "name": "Goel, Paurav",
+      "affiliation": "Department of Computer Science and Engineering, Chandigarh University, Mohali, Punjab, India"
+    }
+  ],
+  "keywords": [
+    "code security",
+    "CWE",
+    "knowledge-action gap",
+    "small language models",
+    "secure code generation",
+    "retrieval-augmented generation"
+  ]
+}

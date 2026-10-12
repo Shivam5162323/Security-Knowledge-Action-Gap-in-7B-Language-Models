@@ -12,14 +12,21 @@ Tables and figures that the manuscript uses in addition to those written by `skg
     figures/figP_threshold.png        sensitivity of the high/low-knowledge split to the threshold
     figures/figP_heatmaps.png         knowledge and baseline introduction rate by model and class, models in table order
     figures/figP_forest.png           paired contrasts for the three outcomes, with the manuscript's condition names
+    figures/figP_gap.png              residual gap by class (fig3 without the title inside the figure)
+    figures/figP_scatter.png          knowledge against introduction rate by class (fig4 without the title)
 
 It also prints the counts that the manuscript quotes in running text, so they can be checked against the data.
 (T21_mixed_model.csv is written by glmm_exact.R.)
 """
 from __future__ import annotations
 
+import io
+import json
 import sys
+import zipfile
+from collections import Counter
 from pathlib import Path
+from xml.etree import ElementTree as ET
 
 import numpy as np
 import pandas as pd
@@ -27,7 +34,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from paper_data import CONTRAST_NAME, MODEL_ORDER  # noqa: E402
-from skgap import analyze, config, figures, stats  # noqa: E402
+from skgap import analyze, config, figures, retrieval, stats  # noqa: E402
 from skgap.figures import BLUE, GRID, INK, INK2, ORANGE, AXIS, plt  # noqa: E402
 from skgap.stimuli import CWES, TASKS  # noqa: E402
 
@@ -86,6 +93,13 @@ def main(run: str) -> None:
               {o: round(100 * (kept[kept.condition == a][o].mean() - kept[kept.condition == 'baseline'][o].mean()), 1)
                for o in ("vulnerable", "functional", "secure_pass")})
     print(f"smallest Holm-adjusted sign-flip p with {len(models)} models and 9 contrasts: {9 * 2 / 2 ** len(models):.3f}")
+    nocode, cut = ~gen.has_code.astype(bool), gen.truncated.astype(bool)
+    print("programs without code:", {name(m): int(v) for m, v in nocode.groupby(gen.model).sum().items() if v},
+          "| of these also truncated:", int((nocode & cut).sum()),
+          "| output tokens of the replies without code:", sorted(gen[nocode].tokens_out.astype(int)))
+    print(f"SD of K over the {K['K'].size} model x class cells: {np.std(K['K']):.3f}")
+    audit_reweighted(d, df)
+    irrelevant_notes(d["retrieval"]["tasks"], tasks, task_cwe, d["paths"].run)
 
     # ── T22: the four outcome combinations by condition ──────────────────────
     rows = []
@@ -148,11 +162,107 @@ def main(run: str) -> None:
     IRc = analyze.mat(base, "vulnerable", "model", "cwe", models, cwes)
     heatmaps(fdir, K["K"][idx], IRc[idx], MODEL_ORDER, cwes)
     forest(fdir, pd.read_csv(out / "tables" / "T13_contrasts.csv"))
+    tier = np.array([analyze.MODEL_BY_TAG[m].tier for m in models])
+    figures.gap(pd.read_csv(out / "tables" / "T8_gap_by_cwe.csv"), fdir, False, title=False, stem="figP_gap")
+    figures.scatter_by_cwe(K["K"], IRc, names, cwes, tier, fdir, False, title=False, stem="figP_scatter")
     print("\nfigures written to", fdir)
 
 
 def _save(fig, fdir: Path, stem: str) -> None:
     figures._save(fig, fdir, stem, False)
+
+
+def audit_reweighted(d: dict, df: pd.DataFrame) -> None:
+    """
+    Agreement of the primary verdict with the scorer, as sampled and weighted to the sampling frame.
+    The audit sample holds equal numbers of programs with each automatic verdict in every class, so its
+    kappa is that of a balanced sample; weighting each stratum by its size in the frame (every generated
+    program with code and a verdict) estimates the kappa of the whole set.
+    """
+    audit = d["paths"].run / "audit"
+    key_file, ratings_file = audit / "vulnerable_key_DO_NOT_OPEN_WHILE_SCORING.json", audit / "vulnerable_ratings_pass1.jsonl"
+    if not (key_file.exists() and ratings_file.exists()):
+        return
+    key = json.loads(key_file.read_text(encoding="utf-8"))
+    rated = {r["item"]: int(r["vulnerable"]) for r in map(json.loads, filter(str.strip, ratings_file.read_text(encoding="utf-8").splitlines()))}
+    frame = df[(df.source == "gen") & df.has_code & df.vulnerable.notna()]
+    strata: dict[tuple[str, int], list[int]] = {}
+    for item, v in key.items():
+        strata.setdefault((v["cwe"], int(v["auto"])), []).append(rated[item])
+    size = {s: int(((frame.cwe == s[0]) & (frame.vulnerable == s[1])).sum()) for s in strata}
+
+    def kappa(t: np.ndarray) -> tuple[float, float]:           # t[automatic verdict, scorer]
+        t = t / t.sum()
+        po = t[0, 0] + t[1, 1]
+        pe = t[0].sum() * t[:, 0].sum() + t[1].sum() * t[:, 1].sum()
+        return float(po), float((po - pe) / (1 - pe))
+
+    def table(draw=lambda vals: np.asarray(vals), weighted=True) -> np.ndarray:
+        t = np.zeros((2, 2))
+        for (cwe, auto), vals in strata.items():
+            v = draw(vals)
+            w = size[(cwe, auto)] / len(vals) if weighted else 1.0
+            t[auto, 1] += w * v.sum()
+            t[auto, 0] += w * (len(v) - v.sum())
+        return t
+
+    po_s, k_s = kappa(table(weighted=False))
+    tw = table()
+    po_w, k_w = kappa(tw)
+    rng = np.random.default_rng(config.RNG_SEED)
+    reps = [kappa(table(lambda vals: rng.choice(vals, len(vals))))[1] for _ in range(5000)]
+    print(f"audit, as sampled ({sum(map(len, strata.values()))} programs, balanced by verdict within class): "
+          f"agreement {po_s:.3f}, kappa {k_s:.3f}")
+    print(f"audit, weighted to the frame of {len(frame):,} programs ({100 * frame.vulnerable.mean():.1f}% vulnerable): "
+          f"agreement {po_w:.3f}, kappa {k_w:.3f} (stratified bootstrap 95% interval {np.quantile(reps, .025):.2f} to "
+          f"{np.quantile(reps, .975):.2f}); scorer's share vulnerable {100 * tw[:, 1].sum() / tw.sum():.1f}%")
+
+
+def irrelevant_notes(retr: dict, tasks: list[str], task_cwe: dict[str, str], run_dir: Path) -> None:
+    """What the notes of the irrelevant-notes condition are, and how many come from a parent or child class."""
+    excluded = retrieval.STUDIED_FAMILY
+    drawn = [(t, n["cwe"]) for t in tasks for n in retr[t]["ctx_irrelevant"]]
+    count = Counter(c for _, c in drawn)
+    corpus = retrieval.load_corpus(run_dir / "corpus.jsonl")
+    cve = Counter(doc["cwe"] for doc in corpus if doc["kind"] == "cve")
+    print(f"corpus: {len(corpus)} notes, {sum(cve.values())} CVE descriptions in {len(cve)} of the "
+          f"{len(retrieval.NVD_CWES)} classes queried (at most {max(cve.values())} each)")
+    print(f"irrelevant notes: {len(drawn)} drawn from {len(count)} classes; identifiers excluded: {len(excluded)} "
+          f"(the {len(CWES)} classes and {len(excluded) - len(CWES)} related ones); pool {sum(doc['cwe'] not in excluded for doc in corpus)} notes; "
+          f"drawn from CWE-20: {count['CWE-20']}, from CWE-74: {count['CWE-74']}")
+    try:                                    # parent and child classes, from the catalogue's Research Concepts view
+        import requests
+        raw = requests.get(retrieval.CWE_XML_URL, timeout=120)
+        raw.raise_for_status()
+        with zipfile.ZipFile(io.BytesIO(raw.content)) as z:
+            root = ET.fromstring(z.read(z.namelist()[0]))
+    except Exception as exc:                # noqa: BLE001  (no network: the count above still stands)
+        print(f"  CWE hierarchy not checked ({type(exc).__name__})")
+        return
+    ns = {"c": root.tag.split("}")[0].strip("{")}
+    up: dict[str, set[str]] = {}
+    for w in root.iterfind(".//c:Weaknesses/c:Weakness", ns):
+        for r in w.iterfind("c:Related_Weaknesses/c:Related_Weakness", ns):
+            if r.get("Nature") == "ChildOf" and r.get("View_ID") == "1000":
+                up.setdefault("CWE-" + w.get("ID"), set()).add("CWE-" + r.get("CWE_ID"))
+    down: dict[str, set[str]] = {}
+    for child, ps in up.items():
+        for p in ps:
+            down.setdefault(p, set()).add(child)
+
+    def reach(start: str, graph: dict[str, set[str]]) -> set[str]:
+        seen, todo = set(), [start]
+        while todo:
+            for nxt in graph.get(todo.pop(), ()):
+                if nxt not in seen:
+                    seen.add(nxt)
+                    todo.append(nxt)
+        return seen
+
+    related = {c: reach(c, up) | reach(c, down) for c in CWES}
+    own = [(t, c) for t, c in drawn if c in related[task_cwe[t]]]
+    print(f"  CWE {root.get('Version')}: notes from an ancestor or descendant of the task's own class: {len(own)} of "
+          f"{len(drawn)} {sorted(set(own))}")
 
 
 def pipeline(fdir, n_models, n_tasks, n_cwes, n_samples, n_conds):
@@ -162,8 +272,8 @@ def pipeline(fdir, n_models, n_tasks, n_cwes, n_samples, n_conds):
          f"{n_tasks} tasks in {n_cwes} CWE classes; each task has a functional test,\nan attack test and a secure / insecure reference solution"),
         ("Detector validation",
          "Semgrep rules and attack tests must separate the two reference\nsolutions of a task before their verdicts are used"),
-        ("Knowledge battery (scored automatically)",
-         "multiple choice · recognition of insecure vs secure code (class not named)\n· explanation · repair (reported separately)"),
+        ("Knowledge battery",
+         "multiple choice · recognition (class not named) · repair: scored automatically\nexplanation: concept rubric and a blind 0–2 score by the scorer model"),
         ("Generation",
          f"{n_models} models × {n_tasks} tasks × {n_conds} conditions × {n_samples} samples\nbaseline · reminder · irrelevant notes · dense RAG · hybrid RAG · oracle RAG"),
         ("Automatic judgement of every program",

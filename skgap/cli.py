@@ -197,9 +197,10 @@ def cmd_power(args):
     print(f"\nFixed-effects slope test, planned design ({len(p.models)} models x {n_c} classes x "
           f"{len(tasks) // n_c} tasks x {p.n_samples} samples), simulated")
     for beta in (0.0, 0.2, 0.35, 0.5, 0.75):
-        pw = stats.simulate_design_power(len(p.models), n_c, len(tasks) // n_c, p.n_samples, beta=beta,
-                                         sims=args.sims, seed=1)
-        print(f"  log-odds change per SD of knowledge = {beta:.2f} (odds ratio {2.718281828 ** -beta:.2f}): "
+        pw, slope = stats.simulate_design_power(len(p.models), n_c, len(tasks) // n_c, p.n_samples, beta=beta,
+                                                sims=args.sims, seed=1, with_slope=True)
+        print(f"  log-odds change per SD of knowledge = {beta:.2f} (odds ratio {2.718281828 ** -beta:.2f}; "
+              f"slope of the introduction rate {100 * slope:+.1f} points per SD): "
               f"{'false-positive rate' if beta == 0 else 'power'} {pw:.2f}")
 
 

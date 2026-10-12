@@ -206,7 +206,11 @@ What the smaller design changes in sections 4, 5 and 7:
 - Correlations: 63 model × class cells; 80% power needs |ρ| ≥ 0.35 if cells were
   independent.
 - H2a, same simulation with 9 models: false-positive rate 0.04; power 0.50 for an
-  odds ratio of 0.82 per SD of K, 0.90 for 0.70, 0.99 for 0.61.
+  odds ratio of 0.82 per SD of K, 0.90 for 0.70, 0.99 for 0.61. In the metric of the
+  test itself, the slope of the introduction rate on K, these effect sizes are falls of
+  3.6, 6.1 and 8.7 percentage points per SD of K (the mean slope of the simulated data
+  sets, printed by `python -m skgap power`), or slopes of −0.21, −0.36 and −0.50 per
+  unit of K at the observed SD of 0.17. The manuscript states power in this metric.
 - Condition contrasts, same simulation with 9 models (model SD 0.04 and 0.08): power
   0.44 and 0.10 for a true risk difference of 0.05, 0.89 and 0.31 for 0.08, 0.98 and
   0.52 for 0.10.
@@ -238,3 +242,31 @@ task's own class was retrieved (T24). The last is confounded with class.
 **Scorer.** After the scorer model had rated the audit sample and the explanations,
 the authors checked its ratings informally. This was not a second rating: no
 agreement statistic was computed and no rating was changed.
+
+Added on 2026-10-12; no result of sections 4 to 6 changed.
+
+**Kappa of the audit.** The audit sample holds ten programs with each automatic
+verdict per class, so its kappa (0.80) is that of a balanced sample and not of the
+whole set of programs, in which 31% carry a vulnerable verdict. Weighting each of
+the 14 strata by its size among the 15,117 programs with code gives an estimated
+agreement of 0.93 and kappa of 0.84 (stratified bootstrap 95% interval 0.76 to
+0.92). Computed by `tools/manuscript/paper_extra.py`.
+
+**Irrelevant notes.** They are drawn from the 1,525 notes whose CWE identifier is
+none of the 27 that make up the seven classes and their close relatives
+(`family` in `skgap/stimuli/base.py`). Broad parent classes were not excluded:
+CWE-20 and CWE-74 supplied 4 of the 168 notes drawn, and 3 of the 168 belong to an
+ancestor or descendant of the task's own class in the CWE hierarchy (version 4.20,
+Research Concepts view). Counted by the same script.
+
+**Retrieval settings.** The NVD period, 1 January to 29 April 2024, is one query
+window of the greatest length the NVD interface serves (120 days). The query is the
+task text alone. The fusion weights (0.6 dense, 0.4 BM25), the constant 60, the
+encoder and the number of notes were not tuned; the BM25 weight, the constant, the
+encoder and the number of notes are those of the first version of the study.
+
+**Figures.** The manuscript uses `figP_gap` and `figP_scatter`, which are fig3 and
+fig4 without the title inside the figure. The axis of fig4 now reads “Knowledge K”
+(K includes recognition), every panel carries its x-axis numbers, and the pipeline
+figure no longer says that the whole knowledge battery is scored automatically:
+the explanations also receive a score from the scorer model.
