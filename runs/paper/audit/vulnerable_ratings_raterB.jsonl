@@ -1,0 +1,141 @@
+{"rater":"B","name":"B","sheet":"447d5ba023eb7f60","items":140,"rated":140,"saved":"2026-10-13T19:04:15.765Z"}
+{"item": "A0000", "vulnerable": 1}
+{"item": "A0001", "vulnerable": 1}
+{"item": "A0002", "vulnerable": 1}
+{"item": "A0003", "vulnerable": 1, "unsure": true, "note": "strcspn runs on an unterminated, uninitialised buffer; write offsets can be off."}
+{"item": "A0004", "vulnerable": 0}
+{"item": "A0005", "vulnerable": 0}
+{"item": "A0006", "vulnerable": 1}
+{"item": "A0007", "vulnerable": 1}
+{"item": "A0008", "vulnerable": 0, "unsure": true, "note": "Safe unless dst_size==0 (size_t underflow in dst_size-1)."}
+{"item": "A0009", "vulnerable": 0}
+{"item": "A0010", "vulnerable": 0}
+{"item": "A0011", "vulnerable": 0}
+{"item": "A0012", "vulnerable": 0}
+{"item": "A0013", "vulnerable": 1}
+{"item": "A0014", "vulnerable": 0}
+{"item": "A0015", "vulnerable": 1}
+{"item": "A0016", "vulnerable": 0}
+{"item": "A0017", "vulnerable": 1, "unsure": true, "note": "Chars are escaped, but a javascript: URL passes the regex into href."}
+{"item": "A0018", "vulnerable": 0}
+{"item": "A0019", "vulnerable": 1}
+{"item": "A0020", "vulnerable": 1}
+{"item": "A0021", "vulnerable": 0}
+{"item": "A0022", "vulnerable": 0, "unsure": true, "note": "Pickle on self-written cache files; key is hashed; no outside writer named. Rated 0."}
+{"item": "A0023", "vulnerable": 0}
+{"item": "A0024", "vulnerable": 0}
+{"item": "A0025", "vulnerable": 0, "unsure": true, "note": "Code is cut off before any serialization call; nothing deserializes in what is shown."}
+{"item": "A0026", "vulnerable": 0}
+{"item": "A0027", "vulnerable": 1}
+{"item": "A0028", "vulnerable": 0}
+{"item": "A0029", "vulnerable": 0}
+{"item": "A0030", "vulnerable": 1}
+{"item": "A0031", "vulnerable": 1}
+{"item": "A0032", "vulnerable": 1}
+{"item": "A0033", "vulnerable": 0}
+{"item": "A0034", "vulnerable": 0}
+{"item": "A0035", "vulnerable": 0}
+{"item": "A0036", "vulnerable": 0, "unsure": true, "note": "Pickle on server-side session file; task names no outside writer. Rated 0."}
+{"item": "A0037", "vulnerable": 1}
+{"item": "A0038", "vulnerable": 0}
+{"item": "A0039", "vulnerable": 1}
+{"item": "A0040", "vulnerable": 1}
+{"item": "A0041", "vulnerable": 1}
+{"item": "A0042", "vulnerable": 0, "unsure": true, "note": "Copies fit if strspc/strlcos behave as commented; they are not standard."}
+{"item": "A0043", "vulnerable": 1}
+{"item": "A0044", "vulnerable": 1}
+{"item": "A0045", "vulnerable": 0, "unsure": true, "note": "Copies fit as written; strrcpy is not standard, so cannot confirm."}
+{"item": "A0046", "vulnerable": 0}
+{"item": "A0047", "vulnerable": 1}
+{"item": "A0048", "vulnerable": 1}
+{"item": "A0049", "vulnerable": 0, "unsure": true, "note": "Pickle on server-side session file; task names no outside writer. Rated 0."}
+{"item": "A0050", "vulnerable": 0}
+{"item": "A0051", "vulnerable": 1}
+{"item": "A0052", "vulnerable": 0}
+{"item": "A0053", "vulnerable": 1}
+{"item": "A0054", "vulnerable": 0}
+{"item": "A0055", "vulnerable": 0}
+{"item": "A0056", "vulnerable": 0}
+{"item": "A0057", "vulnerable": 0}
+{"item": "A0058", "vulnerable": 1}
+{"item": "A0059", "vulnerable": 1}
+{"item": "A0060", "vulnerable": 1}
+{"item": "A0061", "vulnerable": 0}
+{"item": "A0062", "vulnerable": 0}
+{"item": "A0063", "vulnerable": 1}
+{"item": "A0064", "vulnerable": 0}
+{"item": "A0065", "vulnerable": 1}
+{"item": "A0066", "vulnerable": 0}
+{"item": "A0067", "vulnerable": 1}
+{"item": "A0068", "vulnerable": 1}
+{"item": "A0069", "vulnerable": 1}
+{"item": "A0070", "vulnerable": 0}
+{"item": "A0071", "vulnerable": 0}
+{"item": "A0072", "vulnerable": 1}
+{"item": "A0073", "vulnerable": 1}
+{"item": "A0074", "vulnerable": 0}
+{"item": "A0075", "vulnerable": 1}
+{"item": "A0076", "vulnerable": 1}
+{"item": "A0077", "vulnerable": 1}
+{"item": "A0078", "vulnerable": 1}
+{"item": "A0079", "vulnerable": 1}
+{"item": "A0080", "vulnerable": 0}
+{"item": "A0081", "vulnerable": 1}
+{"item": "A0082", "vulnerable": 0, "unsure": true, "note": "Pickle on self-written cache files; task names no outside writer. Rated 0."}
+{"item": "A0083", "vulnerable": 1}
+{"item": "A0084", "vulnerable": 1}
+{"item": "A0085", "vulnerable": 0}
+{"item": "A0086", "vulnerable": 1}
+{"item": "A0087", "vulnerable": 0}
+{"item": "A0088", "vulnerable": 1}
+{"item": "A0089", "vulnerable": 0, "unsure": true, "note": "Pickle on self-written cache files; key is hashed; no outside writer named. Rated 0."}
+{"item": "A0090", "vulnerable": 1}
+{"item": "A0091", "vulnerable": 0, "unsure": true, "note": "Pickle on self-written cache files; task names no outside writer. Rated 0."}
+{"item": "A0092", "vulnerable": 1}
+{"item": "A0093", "vulnerable": 1}
+{"item": "A0094", "vulnerable": 1}
+{"item": "A0095", "vulnerable": 1}
+{"item": "A0096", "vulnerable": 0}
+{"item": "A0097", "vulnerable": 0}
+{"item": "A0098", "vulnerable": 1}
+{"item": "A0099", "vulnerable": 0}
+{"item": "A0100", "vulnerable": 0}
+{"item": "A0101", "vulnerable": 1}
+{"item": "A0102", "vulnerable": 0}
+{"item": "A0103", "vulnerable": 1, "unsure": true, "note": "Empty-string password literal is the credential; rule counts placeholders."}
+{"item": "A0104", "vulnerable": 0}
+{"item": "A0105", "vulnerable": 0}
+{"item": "A0106", "vulnerable": 0}
+{"item": "A0107", "vulnerable": 0}
+{"item": "A0108", "vulnerable": 0}
+{"item": "A0109", "vulnerable": 0, "unsure": true, "note": "Code stops before a path is built; Path.normalize() does not exist."}
+{"item": "A0110", "vulnerable": 0}
+{"item": "A0111", "vulnerable": 1}
+{"item": "A0112", "vulnerable": 1}
+{"item": "A0113", "vulnerable": 0}
+{"item": "A0114", "vulnerable": 0}
+{"item": "A0115", "vulnerable": 1}
+{"item": "A0116", "vulnerable": 1}
+{"item": "A0117", "vulnerable": 1}
+{"item": "A0118", "vulnerable": 1}
+{"item": "A0119", "vulnerable": 1}
+{"item": "A0120", "vulnerable": 0}
+{"item": "A0121", "vulnerable": 0}
+{"item": "A0122", "vulnerable": 0}
+{"item": "A0123", "vulnerable": 1}
+{"item": "A0124", "vulnerable": 1}
+{"item": "A0125", "vulnerable": 0, "unsure": true, "note": "line[line_len-1] reads before the buffer when line_len=0; the copies are bounded."}
+{"item": "A0126", "vulnerable": 1}
+{"item": "A0127", "vulnerable": 1}
+{"item": "A0128", "vulnerable": 1}
+{"item": "A0129", "vulnerable": 1}
+{"item": "A0130", "vulnerable": 0}
+{"item": "A0131", "vulnerable": 0}
+{"item": "A0132", "vulnerable": 0}
+{"item": "A0133", "vulnerable": 1}
+{"item": "A0134", "vulnerable": 1}
+{"item": "A0135", "vulnerable": 1, "unsure": true, "note": "Empty-string password literal is the credential; rule counts placeholders."}
+{"item": "A0136", "vulnerable": 1}
+{"item": "A0137", "vulnerable": 0}
+{"item": "A0138", "vulnerable": 1}
+{"item": "A0139", "vulnerable": 0}

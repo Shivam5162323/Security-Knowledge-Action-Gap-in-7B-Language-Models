@@ -142,6 +142,21 @@ def test_twoway_fe_recovers_a_within_cell_effect_and_ignores_confounds():
     assert stats.twoway_fe(y0, x, B=500, seed=0)["p"] > 0.05
 
 
+def test_twoway_fe_with_aliased_effects_matches_least_squares():
+    rng = np.random.default_rng(2)
+    groups = np.repeat(np.arange(7), 8)              # 56 tasks in 7 classes: task effects are aliased with row-by-class effects
+    x = (rng.random((9, 56)) < 0.4).astype(float)
+    y = rng.normal(0, 1, (9, 1)) + rng.normal(0, 1, (1, 56)) + 0.2 * x + rng.normal(0, 0.3, (9, 56))
+    res = stats.twoway_fe(y, x, B=0, col_groups=groups)
+    r, c = np.indices(y.shape)
+    cell = r.ravel() * 7 + groups[c.ravel()]
+    dummies = [(cell == k).astype(float) for k in range(63)] + [(c.ravel() == k).astype(float) for k in range(56)]
+    D = np.column_stack(dummies + [x.ravel()])
+    beta = np.linalg.lstsq(D, y.ravel(), rcond=None)[0][-1]
+    assert res["beta"] == pytest.approx(beta, abs=1e-9)
+    assert res["df_resid"] == y.size - np.linalg.matrix_rank(D)
+
+
 def test_mann_whitney_and_kappa():
     mw = stats.mann_whitney([1, 2, 3, 4, 5], [6, 7, 8, 9, 10])
     assert mw["U"] == 0 and mw["rank_biserial"] == -1 and mw["p"] < 0.02
@@ -321,6 +336,33 @@ def test_end_to_end_with_resume(tmp_path, monkeypatch):
     assert R["scorer"]["vulnerable"]["automatic_vs_scorer"]["n"] == len(key) or R["scorer"]["explain"]["items"] == len(key)
     report = (tmp_path / "t" / "analysis" / "report.md").read_text(encoding="utf-8")
     assert "T20_scorer_audit" in report and "K_explain_scorer" in report
+
+    # the same sample for human raters: one page each, the scorer's items in another order, nothing but task and code
+    from skgap import audit_human
+    key = json.loads((out / "vulnerable_key_DO_NOT_OPEN_WHILE_SCORING.json").read_text(encoding="utf-8"))
+    orders = []
+    for page in audit_human.make_human_sheets("t"):
+        html = page.read_text(encoding="utf-8")
+        data = json.loads(html.split('<script type="application/json" id="data">', 1)[1].split("</script>", 1)[0])
+        assert sorted(i["item"] for i in data["items"]) == sorted(key)
+        assert all(set(i) == {"item", "weakness", "rule", "lang", "task", "code"} for i in data["items"])
+        assert "mock:" not in html and "rag_" not in html and "|gen|" not in html
+        orders.append([i["item"] for i in data["items"]])
+    assert orders[0] != orders[1]
+    for rater in audit_human.RATERS:
+        rows = [{"rater": rater, "items": len(key)}]
+        rows += [{"item": i, "vulnerable": v["auto"] if (rater == "A" or n) else 1 - v["auto"], "bulk": n > 1}
+                 for n, (i, v) in enumerate(sorted(key.items()))]
+        (out / f"vulnerable_ratings_rater{rater}.jsonl").write_text("\n".join(map(json.dumps, rows)), encoding="utf-8")
+    res = audit_human.human_agreement("t")
+    assert res["automatic_vs_rater"]["A"]["kappa"] == 1 and res["scorer_vs_rater"]["A"]["kappa"] == 1
+    assert res["automatic_vs_scorer"]["n"] == len(key) and res["automatic_vs_scorer"]["kappa"] == 1
+    assert res["between_raters"]["A_B"]["n"] == len(key) and res["between_raters"]["A_B"]["agreement"] == 1 - 1 / len(key)
+    assert res["left_as_set_in_bulk"] == {"A": len(key) - 2, "B": len(key) - 2}
+    assert res["automatic_vs_raters_in_agreement"]["n"] == len(key) - 1
+    R = analyze("t", make_figures=False)
+    assert R["human_audit"]["rated"] == {"A": len(key), "B": len(key)}
+    assert "T27_human_audit" in (tmp_path / "t" / "analysis" / "report.md").read_text(encoding="utf-8")
 
     with pytest.raises(SystemExit):                    # a changed design must not be mixed into an existing run
         monkeypatch.setattr(config, "TEMPERATURE", 0.2)

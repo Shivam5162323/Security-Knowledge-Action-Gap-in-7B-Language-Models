@@ -146,12 +146,12 @@ A negative slope means knowledge carries over into behaviour (coupling). Couplin
 | Fixed-effects slope:      K_det only (model x CWE cells) | 0.039 | -0.234 | 0.451 | 0.600 | 63 |
 | Fixed-effects slope:      K_explain only (model x CWE cells) | -0.167 | -0.657 | 0.095 | 0.109 | 63 |
 | Fixed-effects slope:      K_explain scored by Claude Opus 5.5 (model x CWE cells) | 0.026 | -0.349 | 0.408 | 0.793 | 63 |
-| Fixed-effects slope: H2b  recognises (0/1), within model-and-class and task (model x task cells) | -0.008 | -0.128 | 0.121 | 0.825 | 504 |
+| Fixed-effects slope: H2b  recognises (0/1), within model-and-class and task (model x task cells) | -0.008 | -0.128 | 0.121 | 0.832 | 504 |
 | Fixed-effects slope:      recognises (0/1), model and task effects only (descriptive) | 0.006 | -0.119 | 0.148 | 0.850 | 504 |
 
 **H2a** (class level): one unit of K changes the introduction rate by 0.161 (95% CI -0.385 to 0.868), permutation p = 0.240.
 
-**H2b** (task level): recognising the weakness changes the introduction rate by -0.008 (95% CI -0.128 to 0.121), permutation p = 0.825. Holm-adjusted over the two: 0.480, 0.825.
+**H2b** (task level): recognising the weakness changes the introduction rate by -0.008 (95% CI -0.128 to 0.121), permutation p = 0.832. Holm-adjusted over the two: 0.480, 0.832.
 
 **Table T10_within_cwe. Knowledge vs introduction rate across models, within each class**
 
@@ -234,7 +234,7 @@ Mixed-effects logistic regression (sample level, random intercepts for model, cl
 
 With 9 models the smallest attainable two-sided sign-flip p-value is 0.0039; a contrast in which every model moves the same way reaches it.
 
-**Activation test (H3b).** If knowledge is present but not used, a reminder that adds no information should help most where the model recognises the weakness. Reminder effect on the introduction rate: -0.119 in recognised cells vs -0.136 in the others; interaction within model-and-class and task 0.001 (95% CI -0.154 to 0.134), permutation p = 0.989.
+**Activation test (H3b).** If knowledge is present but not used, a reminder that adds no information should help most where the model recognises the weakness. Reminder effect on the introduction rate: -0.119 in recognised cells vs -0.136 in the others; interaction within model-and-class and task -0.000 (95% CI -0.154 to 0.134), permutation p = 0.995.
 
 **Table T14_effect_by_cwe. Change in introduction rate vs baseline, by class**
 
@@ -292,13 +292,13 @@ With 9 models the smallest attainable two-sided sign-flip p-value is 0.0039; a c
 
 | variant | baseline_ir | gap_recognised | slope_K | p_K | slope_recognises | p_recognises | rd_reminder | rd_rag_dense | rd_rag_hybrid |
 |---|---|---|---|---|---|---|---|---|---|
-| primary outcome | 0.371 | 0.213 | 0.161 | 0.242 | -0.008 | 0.830 | -0.133 | -0.072 | -0.061 |
-| static verdict only | 0.401 | 0.243 | 0.159 | 0.230 | 0.011 | 0.730 | -0.085 | -0.026 | -0.031 |
-| dynamic verdict only | 0.378 | 0.208 | 0.158 | 0.239 | -0.022 | 0.525 | -0.131 | -0.070 | -0.058 |
+| primary outcome | 0.371 | 0.213 | 0.161 | 0.242 | -0.008 | 0.836 | -0.133 | -0.072 | -0.061 |
+| static verdict only | 0.401 | 0.243 | 0.159 | 0.230 | 0.011 | 0.718 | -0.085 | -0.026 | -0.031 |
+| dynamic verdict only | 0.378 | 0.208 | 0.158 | 0.239 | -0.022 | 0.532 | -0.131 | -0.070 | -0.058 |
 | greedy sample only | 0.373 | 0.222 | 0.250 | 0.089 | 0.062 | 0.210 | -0.115 | -0.067 | -0.052 |
-| sampled only (T>0) | 0.371 | 0.211 | 0.139 | 0.319 | -0.025 | 0.488 | -0.137 | -0.073 | -0.063 |
-| functional answers only | 0.414 | 0.217 | 0.061 | 0.651 | -0.036 | 0.369 | -0.131 | -0.045 | -0.058 |
-| placeholder credentials not counted | 0.284 | 0.204 | 0.204 | 0.124 | -0.002 | 0.954 | -0.100 | -0.069 | -0.058 |
+| sampled only (T>0) | 0.371 | 0.211 | 0.139 | 0.319 | -0.025 | 0.496 | -0.137 | -0.073 | -0.063 |
+| functional answers only | 0.414 | 0.217 | 0.061 | 0.651 | -0.035 | 0.371 | -0.131 | -0.045 | -0.058 |
+| placeholder credentials not counted | 0.284 | 0.204 | 0.204 | 0.124 | -0.001 | 0.970 | -0.100 | -0.069 | -0.058 |
 
 
 ## 8. Compute
@@ -339,6 +339,18 @@ Claude Opus 5.5 (`claude-opus-5-5`) judged a stratified random sample of generat
 
 
 Explanations: 63 scored; Spearman correlation between the scorer and the concept rubric 0.121 (permutation p = 0.316).
+
+**Table T27_human_audit. The audited sample rated by human raters, blind to model, condition and verdict, beside the scorer's audit (95% interval of kappa from a bootstrap within class and automatic verdict; precision and recall of the automatic verdict against the scorer or rater). Ratings left as set for all items at once: rater A 0, rater B 0**
+
+| comparison | n | agreement | kappa | kappa_lo | kappa_hi | precision | recall |
+|---|---|---|---|---|---|---|---|
+| automatic verdict against scorer | 140 | 0.900 | 0.800 | 0.714 | 0.886 | 0.943 | 0.868 |
+| automatic verdict against rater A | 140 | 0.893 | 0.786 | 0.700 | 0.871 | 0.957 | 0.848 |
+| automatic verdict against rater B | 140 | 0.864 | 0.729 | 0.629 | 0.814 | 0.871 | 0.859 |
+| rater A against rater B | 140 | 0.943 | 0.886 | 0.829 | 0.942 | n/a | n/a |
+| scorer against rater A | 140 | 0.979 | 0.957 | 0.911 | 1.000 | n/a | n/a |
+| scorer against rater B | 140 | 0.950 | 0.900 | 0.843 | 0.956 | n/a | n/a |
+
 
 ## 10. Sensitivity of the design
 

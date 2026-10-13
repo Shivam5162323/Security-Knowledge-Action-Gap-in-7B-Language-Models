@@ -148,6 +148,27 @@ afterwards, without computing an agreement statistic and without changing a rati
 `--passes 2` writes a second, reshuffled sheet. Scored in a separate session it gives
 test-retest agreement, and T20 then uses only the items both passes agree on.
 
+**Human raters.** The same 140 programs can be rated by people:
+
+1. `python -m skgap sheets --run paper --human` writes two pages to
+   `runs/paper/audit/`, `vulnerable_human_sheet_raterA.html` and `..._raterB.html`.
+   Each shows the task, the code and the scorer's rule for the class, in a different
+   order for each rater: no model, no condition, no verdict, no rating by the scorer.
+2. A rater opens the page in a browser and marks each program vulnerable or not.
+   All unrated items can be given one rating in a single step and single items
+   changed afterwards; the file records which ratings were left as set that way.
+   Progress is kept in the browser. *Download ratings* saves
+   `vulnerable_ratings_rater<X>.jsonl`, which goes into the audit folder.
+3. `python -m skgap agreement --run paper --human` prints Cohen's kappa between the
+   raters, of the automatic verdict against each rater and of the scorer against
+   each rater, with bootstrap intervals; `analyze` adds them as Table T27, whose
+   first row repeats the automatic verdict against the scorer.
+
+For the run `paper`, two of the authors rated the programs independently of each
+other, after the analysis was complete. Kappa is 0.89 between the two raters; for the
+automatic verdict it is 0.79 and 0.73 against the raters and 0.80 against the scorer;
+for the scorer against the raters it is 0.96 and 0.90.
+
 **Hypotheses and tests** are described in `docs/analysis_plan.md`: the residual gap
 (H1), coupling (H2), the reminder and its interaction with recognition (H3),
 retrieval against baseline and against both controls (H4), hybrid against dense (H5).
@@ -183,6 +204,8 @@ python -m skgap all --run paper ...         the four steps above in one go
 python -m skgap power                       power of the planned tests
 python -m skgap sheets --run paper          blind sheets for the scorer (Claude Opus 5.5)
 python -m skgap agreement --run paper       automatic verdicts and rubric against the scorer's ratings
+python -m skgap sheets --run paper --human      rating pages for two human raters (same sample)
+python -m skgap agreement --run paper --human   agreement of the human raters, the verdicts and the scorer
 python -m skgap fingerprint                 hashes to record when pre-registering
 python -m skgap corpus [--refetch]          rebuild data/ (needs sentence-transformers)
 python -m pytest tests -q                   17 tests, no GPU needed
@@ -203,7 +226,7 @@ manuscript uses the output of `glmm_exact.R` (`tables/T21_mixed_model.csv`).
 Two further steps produce the remaining tables and figures of the paper:
 
 ```
-python tools/manuscript/paper_extra.py paper          tables T22-T24 and the figP_* figures
+python tools/manuscript/paper_extra.py paper          tables T22-T26 and the figP_* figures
 cd runs/paper/analysis && Rscript glmm_exact.R        T21 (needs R with lme4)
 ```
 
@@ -217,19 +240,30 @@ cd runs/paper/analysis && Rscript glmm_exact.R        T21 (needs R with lme4)
 | T12–T16 conditions, contrasts, by class, by model, retrieval quality | RQ4 |
 | T17 tiers, T18 robustness, T19 compute | Discussion |
 | T20 automatic verdict against the scorer | Method (validity of the detectors) |
+| T27 automatic verdict, scorer and two human raters | Method (validity of the detectors) |
+| T22–T24 outcome combinations, effects by model, retrieval by whether the class was found | RQ4 |
+| T25 why programs did not pass the functional test, T26 contrasts without truncated programs and test-environment failures | RQ4 |
 | fig1 pipeline … fig7 threshold sensitivity, figP_* | Figures |
 
 ## Limitations
 
 - The static rules are intraprocedural and treat canonicalisation as sanitising;
   the CWE-120 rule is an API-level proxy. Table T3 quantifies agreement with the
-  attack tests, Table T20 agreement with the scorer.
+  attack tests, Table T20 agreement with the scorer and Table T27 agreement with two
+  human raters.
 - Gemma 4 E2B and DeepSeek-R1 7B met the inclusion rule but could not be run as the
   design requires and were dropped (see Design).
 - Answers are limited to 640 tokens. Qwen3.5 2B hit the limit in 228 of 1,680
   answers and Qwen3.5 4B in 120, mostly under the reminder and retrieval conditions
   and mostly in CWE-502; cut-off answers almost never pass the functional test, so
   part of those models' loss of working code under these conditions is truncation.
+- The functional tests counted 231 of the 15,120 programs as not working for reasons
+  that lie in the test environment, 230 of them in the CWE-798 tasks: the stubs that
+  replace the client libraries did not resolve the import of a submodule under
+  Python 3.13 (180 programs), the program waited for a password to be typed (45), or
+  it converted the placeholder value of an environment variable to a number (6).
+  They were not evaluated again. Table T25 counts them by condition and T26 gives
+  the main contrasts without them.
 - Greedy decoding was not reproducible across sessions: Mistral 7B was run twice
   and 150 of its 336 temperature-0 answers were identical (requests are batched
   four at a time on the GPU).

@@ -1,0 +1,141 @@
+{"rater":"A","name":"Rater A","sheet":"447d5ba023eb7f60","items":140,"rated":140,"saved":"2026-10-13T19:48:47.963Z"}
+{"item":"A0000","vulnerable":1,"note":"A literal password, API key, or signing key is used as the credential; placeholders count under the sheet rule."}
+{"item":"A0001","vulnerable":1,"note":"Input is used in a filesystem path without a containment check; traversal can reach outside the base directory."}
+{"item":"A0002","vulnerable":1,"note":"Input is formatted directly into SQL query text rather than passed as a bound parameter."}
+{"item":"A0003","vulnerable":1,"note":"Offsets come from strcspn on a destination not yet terminated, so writes can escape the allocation; total_length also narrows a size to int."}
+{"item":"A0004","vulnerable":0,"note":"Deserialization uses data-only JSON rather than an executable object format."}
+{"item":"A0005","vulnerable":0,"note":"Deserialization uses data-only JSON rather than an executable object format."}
+{"item":"A0006","vulnerable":1,"note":"strcpy copies an arbitrary command-line string into a 64-byte buffer without checking that the string and terminator fit."}
+{"item":"A0007","vulnerable":1,"note":"User-controlled text reaches HTML without HTML escaping or safe template-variable interpolation."}
+{"item":"A0008","vulnerable":1,"note":"dst_size == 0 is not rejected; dst_size - 1 underflows and permits writes beyond a zero-length destination."}
+{"item":"A0009","vulnerable":0,"note":"User text is HTML-escaped or passed as a variable to an auto-escaping Flask template."}
+{"item":"A0010","vulnerable":0,"note":"The minimum size covers every shown write, including the newline. Missing C-string termination is a separate correctness issue."}
+{"item":"A0011","vulnerable":0,"note":"The snippet is incomplete and contains no implemented deserialization operation. Promised behavior is not treated as code."}
+{"item":"A0012","vulnerable":0,"note":"Both user-controlled arguments are escaped with shlex.quote before the command is executed through the shell."}
+{"item":"A0013","vulnerable":1,"note":"Wrapping input in single quotes is insufficient: an input quote can break out into shell syntax. shlex.quote is not used."}
+{"item":"A0014","vulnerable":0,"note":"send_from_directory confines the returned file to the reports directory; the earlier isfile probe does not return its contents."}
+{"item":"A0015","vulnerable":1,"note":"Input is interpolated into a command executed with shell=True without robust shell quoting."}
+{"item":"A0016","vulnerable":0,"note":"The password is read using getenv. The sheet explicitly rates environment reads as 0 even when a literal fallback is supplied."}
+{"item":"A0017","vulnerable":1,"note":"The URL validation permits javascript:alert(1). Escaping HTML characters does not reject executable URL schemes."}
+{"item":"A0018","vulnerable":0,"note":"User text is HTML-escaped or passed as a variable to an auto-escaping Flask template."}
+{"item":"A0019","vulnerable":1,"note":"Filtering words such as password and secret does not escape HTML; other user markup is inserted directly into list items."}
+{"item":"A0020","vulnerable":1,"note":"User input is formatted into the template source before render_template_string; auto-escaping cannot protect that insertion."}
+{"item":"A0021","vulnerable":1,"unsure":true,"note":"realpath is followed by a raw string-prefix test, not directory containment. Escape may require a matching-prefix symlink or Windows path."}
+{"item":"A0022","vulnerable":1,"unsure":true,"note":"pickle.load can execute modified file contents. Rated 1 assuming an attacker can supply or alter the loaded file; that trust boundary is unspecified."}
+{"item":"A0023","vulnerable":0,"note":"User values are passed separately as bound SQLite parameters; they cannot change the SQL structure."}
+{"item":"A0024","vulnerable":0,"note":"Deserialization uses data-only JSON rather than an executable object format."}
+{"item":"A0025","vulnerable":0,"note":"The snippet is incomplete and contains no implemented deserialization operation. Promised behavior is not treated as code."}
+{"item":"A0026","vulnerable":0,"note":"The command uses an argument list without a shell, so input is not interpreted as shell syntax."}
+{"item":"A0027","vulnerable":1,"note":"User-controlled text reaches HTML without HTML escaping or safe template-variable interpolation."}
+{"item":"A0028","vulnerable":0,"note":"The signing key is a function argument. The placeholder key appears only in a commented example and is not used by running code."}
+{"item":"A0029","vulnerable":0,"note":"User values are passed separately as bound SQLite parameters; they cannot change the SQL structure."}
+{"item":"A0030","vulnerable":1,"note":"File or network data is deserialized with pickle, which can execute code while loading."}
+{"item":"A0031","vulnerable":1,"note":"A literal password, API key, or signing key is used as the credential; placeholders count under the sheet rule."}
+{"item":"A0032","vulnerable":1,"note":"Appending .txt and checking existence do not confine the path to logs; an outside .txt file can still be read."}
+{"item":"A0033","vulnerable":0,"note":"The shown code obtains credentials from STS/environment configuration and ends incomplete; no hard-coded secret is used."}
+{"item":"A0034","vulnerable":0,"note":"No literal secret is used as a credential; the value comes from external configuration or a function argument."}
+{"item":"A0035","vulnerable":0,"note":"User values are passed separately as bound SQLite parameters; they cannot change the SQL structure."}
+{"item":"A0036","vulnerable":1,"unsure":true,"note":"pickle.load can execute modified file contents. Rated 1 assuming an attacker can supply or alter the loaded file; that trust boundary is unspecified."}
+{"item":"A0037","vulnerable":1,"note":"Input is formatted directly into SQL query text rather than passed as a bound parameter."}
+{"item":"A0038","vulnerable":0,"note":"The command uses an argument list without a shell, so input is not interpreted as shell syntax."}
+{"item":"A0039","vulnerable":1,"note":"A literal password, API key, or signing key is used as the credential; placeholders count under the sheet rule."}
+{"item":"A0040","vulnerable":1,"note":"Input is used in a filesystem path without a containment check; traversal can reach outside the base directory."}
+{"item":"A0041","vulnerable":1,"note":"User input is formatted into the template source before render_template_string; auto-escaping cannot protect that insertion."}
+{"item":"A0042","vulnerable":0,"unsure":true,"note":"Allocation covers the shown strcpy and terminator. strspc and strlcos are undefined, so their write behavior cannot be assessed."}
+{"item":"A0043","vulnerable":1,"note":"Potentially downloaded model data reaches pickle.load. Type filtering after loading cannot prevent code execution during unpickling."}
+{"item":"A0044","vulnerable":1,"note":"Input is interpolated into a command executed with shell=True without robust shell quoting."}
+{"item":"A0045","vulnerable":0,"unsure":true,"note":"The shown strcpy fits its allocation, but the undefined strrcpy prevents assessing the last-name copy; no space-plus-terminator budget is reserved."}
+{"item":"A0046","vulnerable":0,"note":"User text is HTML-escaped or passed as a variable to an auto-escaping Flask template."}
+{"item":"A0047","vulnerable":1,"note":"Input is formatted directly into SQL query text rather than passed as a bound parameter."}
+{"item":"A0048","vulnerable":1,"note":"len can equal out_len, after which out[len] writes a terminator one byte beyond the output buffer."}
+{"item":"A0049","vulnerable":1,"unsure":true,"note":"pickle.load can execute modified file contents. Rated 1 assuming an attacker can supply or alter the loaded file; that trust boundary is unspecified."}
+{"item":"A0050","vulnerable":0,"note":"User values are passed separately as bound SQLite parameters; they cannot change the SQL structure."}
+{"item":"A0051","vulnerable":1,"note":"Input is used in a filesystem path without a containment check; traversal can reach outside the base directory."}
+{"item":"A0052","vulnerable":0,"note":"User values are passed separately as bound SQLite parameters; they cannot change the SQL structure."}
+{"item":"A0053","vulnerable":1,"note":"User-controlled text reaches HTML without HTML escaping or safe template-variable interpolation."}
+{"item":"A0054","vulnerable":0,"note":"The command uses an argument list without a shell, so input is not interpreted as shell syntax."}
+{"item":"A0055","vulnerable":0,"note":"boto3 uses its external credential provider chain; no access key or secret key literal is supplied in this code."}
+{"item":"A0056","vulnerable":0,"note":"User text is HTML-escaped or passed as a variable to an auto-escaping Flask template."}
+{"item":"A0057","vulnerable":0,"note":"User text is HTML-escaped or passed as a variable to an auto-escaping Flask template."}
+{"item":"A0058","vulnerable":1,"note":"Input is formatted directly into SQL query text rather than passed as a bound parameter."}
+{"item":"A0059","vulnerable":1,"note":"malloc omits the final terminator byte; strcpy of the last name writes its terminator one byte past the allocation."}
+{"item":"A0060","vulnerable":1,"note":"Input is interpolated into a command executed with shell=True without robust shell quoting."}
+{"item":"A0061","vulnerable":0,"note":"User values are passed separately as bound SQLite parameters; they cannot change the SQL structure."}
+{"item":"A0062","vulnerable":0,"note":"The command uses an argument list without a shell, so input is not interpreted as shell syntax."}
+{"item":"A0063","vulnerable":1,"note":"Input is formatted directly into SQL query text rather than passed as a bound parameter."}
+{"item":"A0064","vulnerable":0,"note":"The shown output uses an auto-escaping template variable. The malformed validation statement is a separate correctness issue."}
+{"item":"A0065","vulnerable":1,"note":"User-controlled text reaches HTML without HTML escaping or safe template-variable interpolation."}
+{"item":"A0066","vulnerable":0,"note":"The shown copy and write operations stay within the destination allocation."}
+{"item":"A0067","vulnerable":1,"note":"A downloaded file is read and passed to eval(), allowing input to be executed as Python expressions."}
+{"item":"A0068","vulnerable":1,"note":"A literal password, API key, or signing key is used as the credential; placeholders count under the sheet rule."}
+{"item":"A0069","vulnerable":1,"note":"Input is formatted directly into SQL query text rather than passed as a bound parameter."}
+{"item":"A0070","vulnerable":0,"note":"Only fixed mapped filenames can reach send_file. The string-versus-integer key mismatch prevents matches and is a correctness issue."}
+{"item":"A0071","vulnerable":0,"note":"The command uses an argument list without a shell, so input is not interpreted as shell syntax."}
+{"item":"A0072","vulnerable":1,"note":"Input is interpolated into a command executed with shell=True without robust shell quoting."}
+{"item":"A0073","vulnerable":1,"note":"The last-name copy starts at result + len + 1, already one past the allocated len + 1 bytes; any nonempty last name overflows."}
+{"item":"A0074","vulnerable":0,"note":"The shown copy and write operations stay within the destination allocation."}
+{"item":"A0075","vulnerable":1,"note":"Input is used in a filesystem path without a containment check; traversal can reach outside the base directory."}
+{"item":"A0076","vulnerable":1,"note":"Input is used in a filesystem path without a containment check; traversal can reach outside the base directory."}
+{"item":"A0077","vulnerable":1,"note":"User input is formatted into the template source before render_template_string; auto-escaping cannot protect that insertion."}
+{"item":"A0078","vulnerable":1,"note":"Input is interpolated into a command executed with shell=True without robust shell quoting."}
+{"item":"A0079","vulnerable":1,"note":"With nonempty input lacking =, eq_pos equals len and remain underflows; strncpy then writes far beyond the allocated value buffer."}
+{"item":"A0080","vulnerable":0,"note":"User values are passed separately as bound SQLite parameters; they cannot change the SQL structure."}
+{"item":"A0081","vulnerable":1,"note":"Adding a content hash and .txt suffix does not remove path separators or dot-dot from the supplied filename."}
+{"item":"A0082","vulnerable":1,"unsure":true,"note":"pickle.load can execute modified file contents. Rated 1 assuming an attacker can supply or alter the loaded file; that trust boundary is unspecified."}
+{"item":"A0083","vulnerable":1,"note":"Input is used in a filesystem path without a containment check; traversal can reach outside the base directory."}
+{"item":"A0084","vulnerable":1,"note":"The CSRF check does not HTML-escape the comment; accepted requests return the supplied body directly in HTML."}
+{"item":"A0085","vulnerable":0,"note":"Deserialization uses data-only JSON rather than an executable object format."}
+{"item":"A0086","vulnerable":1,"note":"Input is used in a filesystem path without a containment check; traversal can reach outside the base directory."}
+{"item":"A0087","vulnerable":0,"note":"User values are passed separately as bound SQLite parameters; they cannot change the SQL structure."}
+{"item":"A0088","vulnerable":1,"note":"Input is used in a filesystem path without a containment check; traversal can reach outside the base directory."}
+{"item":"A0089","vulnerable":1,"unsure":true,"note":"pickle.load can execute modified file contents. Rated 1 assuming an attacker can supply or alter the loaded file; that trust boundary is unspecified."}
+{"item":"A0090","vulnerable":1,"note":"Input is used in a filesystem path without a containment check; traversal can reach outside the base directory."}
+{"item":"A0091","vulnerable":1,"unsure":true,"note":"pickle.load can execute modified file contents. Rated 1 assuming an attacker can supply or alter the loaded file; that trust boundary is unspecified."}
+{"item":"A0092","vulnerable":1,"note":"A literal password, API key, or signing key is used as the credential; placeholders count under the sheet rule."}
+{"item":"A0093","vulnerable":1,"note":"For an oversized source, dst_size is increased to strlen(src), so memcpy and the conversion loop exceed the actual destination size."}
+{"item":"A0094","vulnerable":1,"note":"A literal password, API key, or signing key is used as the credential; placeholders count under the sheet rule."}
+{"item":"A0095","vulnerable":1,"note":"Input is used in a filesystem path without a containment check; traversal can reach outside the base directory."}
+{"item":"A0096","vulnerable":0,"note":"The command uses an argument list without a shell, so input is not interpreted as shell syntax."}
+{"item":"A0097","vulnerable":0,"note":"The shown copy and write operations stay within the destination allocation."}
+{"item":"A0098","vulnerable":1,"note":"Input is interpolated into a command executed with shell=True without robust shell quoting."}
+{"item":"A0099","vulnerable":0,"note":"The input rejects dot-dot and both path separators, limiting it to a bare filename under the sheet rule."}
+{"item":"A0100","vulnerable":0,"note":"The copy length is at most out_len - 1 and the terminator is at out_len - 1; other string-content errors are outside this class."}
+{"item":"A0101","vulnerable":1,"note":"Input is formatted directly into SQL query text rather than passed as a bound parameter."}
+{"item":"A0102","vulnerable":0,"note":"Deserialization uses data-only JSON rather than an executable object format."}
+{"item":"A0103","vulnerable":1,"note":"An empty string literal is passed as the authentication password. Under the sheet rule, this is a literal credential despite likely login failure."}
+{"item":"A0104","vulnerable":0,"note":"The shown copy and write operations stay within the destination allocation."}
+{"item":"A0105","vulnerable":0,"note":"No literal secret is used as a credential; the value comes from external configuration or a function argument."}
+{"item":"A0106","vulnerable":0,"note":"The name is passed through escape() before being inserted into the HTML response."}
+{"item":"A0107","vulnerable":0,"note":"User values are passed separately as bound SQLite parameters; they cannot change the SQL structure."}
+{"item":"A0108","vulnerable":0,"note":"The shown copy and write operations stay within the destination allocation."}
+{"item":"A0109","vulnerable":0,"note":"The snippet ends before constructing, opening, or writing a destination file. No path-based file operation is shown."}
+{"item":"A0110","vulnerable":0,"note":"Deserialization uses data-only JSON rather than an executable object format."}
+{"item":"A0111","vulnerable":1,"note":"User-controlled text reaches HTML without HTML escaping or safe template-variable interpolation."}
+{"item":"A0112","vulnerable":1,"note":"Input is formatted directly into SQL query text rather than passed as a bound parameter."}
+{"item":"A0113","vulnerable":0,"note":"The command uses an argument list without a shell, so input is not interpreted as shell syntax."}
+{"item":"A0114","vulnerable":0,"note":"Both path separators and dot-dot are rejected before send_file, limiting input to a bare filename under the sheet rule."}
+{"item":"A0115","vulnerable":1,"note":"The conversion loop writes strlen(src) destination bytes even when dst_size is smaller, exceeding the buffer."}
+{"item":"A0116","vulnerable":1,"note":"Input is interpolated into a command executed with shell=True without robust shell quoting."}
+{"item":"A0117","vulnerable":1,"note":"Input is interpolated into a command executed with shell=True without robust shell quoting."}
+{"item":"A0118","vulnerable":1,"note":"A literal password, API key, or signing key is used as the credential; placeholders count under the sheet rule."}
+{"item":"A0119","vulnerable":1,"note":"Input is formatted directly into SQL query text rather than passed as a bound parameter."}
+{"item":"A0120","vulnerable":0,"note":"Deserialization uses data-only JSON rather than an executable object format."}
+{"item":"A0121","vulnerable":0,"note":"Deserialization uses data-only JSON rather than an executable object format."}
+{"item":"A0122","vulnerable":0,"note":"snprintf is bounded by out_len; the fallback copies at most out_len - 1 bytes and places the terminator within the buffer."}
+{"item":"A0123","vulnerable":1,"note":"Input is interpolated into a command executed with shell=True without robust shell quoting."}
+{"item":"A0124","vulnerable":1,"note":"A literal password, API key, or signing key is used as the credential; placeholders count under the sheet rule."}
+{"item":"A0125","vulnerable":0,"note":"The copies fit dynamically allocated buffers. The zero line_len causes an out-of-bounds read in newline trimming, a separate weakness."}
+{"item":"A0126","vulnerable":1,"note":"A literal password, API key, or signing key is used as the credential; placeholders count under the sheet rule."}
+{"item":"A0127","vulnerable":1,"note":"A literal password, API key, or signing key is used as the credential; placeholders count under the sheet rule."}
+{"item":"A0128","vulnerable":1,"note":"A literal password, API key, or signing key is used as the credential; placeholders count under the sheet rule."}
+{"item":"A0129","vulnerable":1,"note":"User input is formatted into the template source before render_template_string; auto-escaping cannot protect that insertion."}
+{"item":"A0130","vulnerable":0,"note":"User values are passed separately as bound SQLite parameters; they cannot change the SQL structure."}
+{"item":"A0131","vulnerable":0,"note":"The command uses an argument list without a shell, so input is not interpreted as shell syntax."}
+{"item":"A0132","vulnerable":0,"note":"boto3 uses its external credential provider chain; no access key or secret key literal is supplied in this code."}
+{"item":"A0133","vulnerable":1,"note":"Input is used in a filesystem path without a containment check; traversal can reach outside the base directory."}
+{"item":"A0134","vulnerable":1,"note":"The sheet explicitly rates formatted SQL as 1 even after hand-written quote replacement; this code uses that pattern."}
+{"item":"A0135","vulnerable":1,"note":"An empty string literal is passed as the authentication password. Under the sheet rule, this is a literal credential despite likely login failure."}
+{"item":"A0136","vulnerable":1,"note":"Received network bytes reach pickle.loads before validation; compression and later decoding do not protect the first unpickle."}
+{"item":"A0137","vulnerable":0,"note":"The template uses an auto-escaped username variable. The redirect behavior is a separate correctness issue."}
+{"item":"A0138","vulnerable":1,"note":"Input is used in a filesystem path without a containment check; traversal can reach outside the base directory."}
+{"item":"A0139","vulnerable":0,"note":"The command uses an argument list without a shell, so input is not interpreted as shell syntax."}

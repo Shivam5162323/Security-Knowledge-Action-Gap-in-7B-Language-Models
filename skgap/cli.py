@@ -211,6 +211,12 @@ def _kinds(args) -> tuple[str, ...]:
 
 def cmd_sheets(args):
     from .audit import make_sheets
+    if args.human:
+        from .audit_human import make_human_sheets
+        for p in make_human_sheets(args.run):
+            print("wrote", p)
+        print("One page per rater, for the sample the scorer judged. Nothing in a page reveals a verdict.")
+        return
     for kind in _kinds(args):
         for p in make_sheets(args.run, n=args.n, passes=args.passes, kind=kind):
             print("wrote", p)
@@ -219,6 +225,10 @@ def cmd_sheets(args):
 
 def cmd_agreement(args):
     from .audit import agreement, scorer_results
+    if args.human:
+        from .audit_human import human_agreement
+        print(json.dumps(human_agreement(args.run), indent=1))
+        return
     res = scorer_results(args.run) if args.kind == "both" else {args.kind: agreement(args.run, args.kind)}
     if not res:
         raise SystemExit("Nothing scored yet for this run.")
@@ -313,11 +323,14 @@ def main(argv=None) -> int:
     p.add_argument("--kind", default="both", choices=["both", "vulnerable", "explain"])
     p.add_argument("--n", type=int, default=140, help="generated answers to audit (explanations are all scored)")
     p.add_argument("--passes", type=int, default=1, help="2 adds a reshuffled sheet for test-retest agreement")
+    p.add_argument("--human", action="store_true",
+                   help="write one HTML rating page per human rater for the sample the scorer judged")
     p.set_defaults(fn=cmd_sheets)
 
     p = sub.add_parser("agreement", help="automatic verdicts and rubric against the scorer's ratings")
     p.add_argument("--run", default="paper")
     p.add_argument("--kind", default="both", choices=["both", "vulnerable", "explain"])
+    p.add_argument("--human", action="store_true", help="agreement of the human raters instead of the scorer")
     p.set_defaults(fn=cmd_agreement)
 
     p = sub.add_parser("merge", help="merge earlier copies of a run into the current one")

@@ -270,3 +270,61 @@ fig4 without the title inside the figure. The axis of fig4 now reads “Knowledg
 (K includes recognition), every panel carries its x-axis numbers, and the pipeline
 figure no longer says that the whole knowledge battery is scored automatically:
 the explanations also receive a score from the scorer model.
+
+Added on 2026-10-13, after a further review; no result of sections 4 to 6 changed.
+
+**Why programs did not pass the functional test.** Every non-functional program is
+assigned to one reason from the error the evaluation stored (`failure_reason` in
+`tools/manuscript/paper_extra.py`, Table T25): cut off at the output limit, does not
+parse or compile, failed import, exception on ordinary input, wrong result, and a
+group that lies in the test environment and not in the program. That group has 231
+programs, 230 of them in the CWE-798 tasks: the stubs for the client libraries did
+not resolve the import of a submodule under Python 3.13, the program waited for a
+password to be typed, or it converted the placeholder value of an environment
+variable to a number. The programs were not evaluated again and every outcome in
+sections 4 to 6 still counts them as not functional. Table T26 repeats the contrasts
+of the reminder and of dense retrieval without the truncated programs and without
+this group. The classification and the exclusion were chosen after the results were
+known.
+
+**Human raters.** `python -m skgap sheets --human` writes a rating page per rater
+for the sample the scorer judged, under the same rules (`skgap/audit_human.py`).
+A rater may give all unrated items one rating in a single step and then change
+single items; the ratings file marks those left unchanged. Agreement between the
+raters, with the automatic verdict and with the scorer is reported as Table T27 once
+the ratings exist. Like the scorer's, these ratings do not alter any outcome.
+
+Added on 2026-10-14. A correction: three results of sections 4 to 6 change in the
+third decimal, and no conclusion changes.
+
+**Aliased fixed effects.** `stats.fe_slope` removed the fixed effects with a QR
+factorisation of the dummy variables and dropped the columns whose diagonal entry
+was zero. Where effects are aliased, as model-by-class and task effects are (a task
+lies within one class), the columns that were kept did not span the whole design,
+and the slope depended on rounding inside the factorisation, so it differed between
+machines. The projection now uses an orthonormal basis from the singular value
+decomposition and agrees with ordinary least squares
+(`test_twoway_fe_with_aliased_effects_matches_least_squares`). What changed:
+
+- H2b: slope −0.0076, was −0.0080; permutation p = 0.832, was 0.825. The interval,
+  −0.128 to 0.121, is the same to three decimals.
+- H3b: interaction −0.0002, was 0.0006; p = 0.995, was 0.989; interval −0.154 to
+  0.134 as before.
+- T18, slope on *recognises*: at most 0.0007 from the earlier value in any variant,
+  p-values at most 0.016.
+
+H2a and every other result are unchanged: their fixed effects are not aliased, and
+both calculations give the same slope to 15 decimals. `report.md`, `results.json`,
+T9 and T18 were written again; the release archived as version 1.0.1 holds the
+earlier values.
+
+**Ratings by two authors.** Two of the authors rated the 140 programs of the audit
+sample on the pages described above, independently of each other and after the
+analysis was complete. Table T27 gives the agreement. Kappa between the raters is
+0.89 (95% interval 0.83 to 0.94). For the automatic verdict it is 0.79 (0.70 to
+0.87) against rater A and 0.73 (0.63 to 0.81) against rater B; against the scorer it
+is 0.80 (0.71 to 0.89), a row that T27 repeats from T20 with the interval computed
+in the same way. For the scorer it is 0.96 against rater A and 0.90 against rater B.
+Six of the eight programs on which the raters differ store a session or a cache with
+pickle and read the file back: the automatic verdict, the scorer and rater A count
+them as vulnerable, rater B does not. No outcome was changed.

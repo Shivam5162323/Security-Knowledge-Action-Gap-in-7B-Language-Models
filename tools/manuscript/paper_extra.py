@@ -6,6 +6,9 @@ Tables and figures that the manuscript uses in addition to those written by `skg
     tables/T22_composition.csv        the four outcome combinations by condition
     tables/T23_effect_by_model.csv    change in each outcome under the reminder and dense retrieval, by model
     tables/T24_retrieval_hit.csv      retrieval quality, and the effect of retrieval split by whether it found the class
+    tables/T25_failure_reasons.csv    why programs did not pass the functional test, by condition
+    tables/T26_failure_sensitivity.csv  effect of the reminder and of dense retrieval without truncated programs and
+                                      without failures that belong to the test environment
     figures/figP_pipeline.png         study pipeline (manuscript wording)
     figures/figP_composition.png      outcome composition by condition
     figures/figP_tradeoff.png         change in vulnerable share against change in functional share, by model
@@ -22,6 +25,7 @@ from __future__ import annotations
 
 import io
 import json
+import re
 import sys
 import zipfile
 from collections import Counter
@@ -35,12 +39,27 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from paper_data import CONTRAST_NAME, MODEL_ORDER  # noqa: E402
 from skgap import analyze, config, figures, retrieval, stats  # noqa: E402
+from skgap.config import slug  # noqa: E402
 from skgap.figures import BLUE, GRID, INK, INK2, ORANGE, AXIS, plt  # noqa: E402
+from skgap.harness.lib import ENV_SENTINEL  # noqa: E402
 from skgap.stimuli import CWES, TASKS  # noqa: E402
+from skgap.store import JsonlStore  # noqa: E402
 
 AQUA, NEUTRAL = "#1baf7a", "#c3c2b7"
 COND_LABEL = {"baseline": "Baseline", "reminder": "Reminder", "ctx_irrelevant": "Irrelevant notes",
               "rag_dense": "Dense RAG", "rag_hybrid": "Hybrid RAG", "rag_oracle": "Oracle RAG"}
+REASONS = {     # why a program did not pass its functional test; the first reason that applies is taken
+    "truncated": "answer cut off at the output limit",
+    "no_code": "no code in the answer",
+    "environment": "test environment",
+    "syntax": "does not parse or compile",
+    "import": "imports a name or package that is not available",
+    "load": "other error while the module is loaded",
+    "entry": "required function or application object missing",
+    "exception": "raises an exception on ordinary input",
+    "timeout": "does not finish within the time limit",
+    "wrong_result": "runs and returns the wrong result",
+}
 
 
 def main(run: str) -> None:
@@ -148,6 +167,8 @@ def main(run: str) -> None:
     t24.to_csv(out / "tables" / "T24_retrieval_hit.csv", index=False)
     print("\n== T24 ==\n", t24.drop(columns="hits_by_class").round(3).to_string(index=False))
     print(t24[["condition", "hits_by_class"]].drop_duplicates().to_string(index=False))
+
+    failures(d, gen, conds, models, tasks)
 
     # ── figures ──────────────────────────────────────────────────────────────
     fdir = out / "figures"
@@ -265,6 +286,105 @@ def irrelevant_notes(retr: dict, tasks: list[str], task_cwe: dict[str, str], run
           f"{len(drawn)} {sorted(set(own))}")
 
 
+def failure_reason(r: dict, response: str) -> tuple[str, str]:
+    """
+    Why a generated program did not pass its functional test, as (reason, detail), from what the evaluation
+    stored; ("", "") for a program that passed. Three kinds of failure are put down to the test environment and
+    not to the program: an import of a submodule of a library that the credentials tasks replace by a stub
+    (the stubs do not resolve submodules under the Python version of the run), a program that waits for a
+    password to be typed, and a failure on the placeholder value that stands in for an environment variable.
+    """
+    d = r.get("dynamic") or {}
+    if d.get("functional"):
+        return "", ""
+    if r.get("done_reason") == "length":
+        return "truncated", ""
+    if not r.get("has_code"):
+        return "no_code", ""
+    imp, fun = (str(d.get(k) or "").strip().split("\n")[-1] for k in ("import_error", "functional_error"))
+    note = str(d.get("note") or "")
+    if "__spec__" in imp:
+        return "environment", "submodule of a stubbed library"
+    if ENV_SENTINEL in imp + fun:
+        return "environment", "placeholder value of an environment variable"
+    if (imp + fun).startswith("EOFError") or (note == "timeout" and re.search(r"\bgetpass\b|\binput\s*\(", response)):
+        return "environment", "waits for typed input"
+    if r.get("syntax_ok") is False or note.startswith("compile") or imp.startswith(("SyntaxError", "IndentationError")):
+        return "syntax", ""
+    if d.get("import_ok") is False and imp:
+        if imp.startswith(("ImportError", "ModuleNotFoundError")):
+            return "import", " ".join(re.findall(r"'([\w.]+)'", imp)[:2])
+        return "load", imp.split(":")[0]
+    if d.get("entry_ok") is False:
+        return "entry", ""
+    if fun:
+        return "exception", fun.split(":")[0]
+    if note in ("timeout", "no result"):
+        return "timeout", ""
+    return "wrong_result", ""
+
+
+def failures(d: dict, gen: pd.DataFrame, conds: list[str], models: list[str], tasks: list[str]) -> None:
+    """T25 and T26: the reasons for non-functional programs, and the contrasts without two groups of them."""
+    paths, out = d["paths"], d["paths"].analysis
+    why: dict[str, tuple[str, str]] = {}
+    own: dict[str, bool] = {}               # the exception carries a message that is written in the program itself
+    for tag in models:
+        responses = {r["key"]: r.get("response") or "" for r in JsonlStore(paths.gen / f"{slug(tag)}.jsonl").records()}
+        for r in JsonlStore(paths.eval / f"{slug(tag)}.jsonl").records():
+            if r["source"] == "gen":
+                why[r["key"]] = failure_reason(r, responses.get(r["key"], ""))
+                msg = str((r.get("dynamic") or {}).get("functional_error") or "").strip().split("\n")[-1].partition(": ")[2]
+                pieces = (p.strip(" .:,") for p in re.split(r"'[^']*'|\"[^\"]*\"|\d+|\[Errno \d+\]", msg))
+                own[r["key"]] = any(len(p) >= 12 and p in responses.get(r["key"], "") for p in pieces)
+    gen = gen.assign(reason=[why[k][0] for k in gen.key], detail=[why[k][1] for k in gen.key],
+                     own_message=[own[k] for k in gen.key])
+    assert ((gen.reason == "") == (gen.functional == 1)).all(), "reasons and the functional outcome disagree"
+
+    rows = [{"reason": "functional", "label": "passes the functional test",
+             **{c: int(((gen.condition == c) & (gen.reason == "")).sum()) for c in conds}}]
+    for key, label in REASONS.items():
+        g = gen[gen.reason == key]
+        rows.append({"reason": key, "label": label, **{c: int((g.condition == c).sum()) for c in conds}})
+        if key == "environment":
+            for det in sorted(set(g.detail)):
+                rows.append({"reason": f"{key}: {det}", "label": det,
+                             **{c: int(((g.condition == c) & (g.detail == det)).sum()) for c in conds}})
+    t25 = pd.DataFrame(rows)
+    t25.to_csv(out / "tables" / "T25_failure_reasons.csv", index=False)
+    print("\n== T25 ==\n", t25.drop(columns="label").to_string(index=False))
+    for key in ("import", "load", "exception"):
+        for c in ("baseline", "reminder"):
+            g = gen[(gen.reason == key) & (gen.condition == c)]
+            print(f"  {key}, {c}: by class {g.groupby('cwe').size().to_dict()} | most frequent {Counter(g.detail).most_common(6)}")
+    for c in ("baseline", "reminder"):
+        g = gen[(gen.condition == c) & (gen.reason == "exception")]
+        print(f"  exception, {c}: message written in the program itself (a literal piece of 12 or more characters): "
+              f"{int(g.own_message.sum())} of {len(g)}")
+    env = gen[gen.reason == "environment"]
+    print("  test environment by class:", env.groupby("cwe").size().to_dict(), "| by model:",
+          {analyze.name(m): int(v) for m, v in env.groupby("model").size().items()})
+
+    subsets = {"all programs": gen,
+               "without truncated programs": gen[~gen.truncated],
+               "without truncated programs and test-environment failures": gen[~gen.truncated & (gen.reason != "environment")]}
+    rows = []
+    for label, g in subsets.items():
+        for a in ("reminder", "rag_dense"):
+            row = {"subset": label, "contrast": f"{a} - baseline", "programs_excluded": len(gen) - len(g)}
+            for o in ("vulnerable", "functional", "secure_pass"):
+                diff = (analyze.mat(g[g.condition == a], o, "model", "task", models, tasks)
+                        - analyze.mat(g[g.condition == "baseline"], o, "model", "task", models, tasks))
+                ci = stats.boot2way([diff], lambda ms: stats.nanmean(ms[0]), config.BOOTSTRAP_B, config.RNG_SEED)
+                row[f"{o}_pooled"] = float(g[g.condition == a][o].mean() - g[g.condition == "baseline"][o].mean())
+                row[o], row[f"{o}_lo"], row[f"{o}_hi"] = ci["est"], ci["lo"], ci["hi"]
+                row[f"{o}_cells"] = int(np.isfinite(diff).sum())
+            rows.append(row)
+    t26 = pd.DataFrame(rows)
+    t26.to_csv(out / "tables" / "T26_failure_sensitivity.csv", index=False)
+    print("\n== T26 ==\n", t26.round(3).to_string(index=False))
+
+
 def pipeline(fdir, n_models, n_tasks, n_cwes, n_samples, n_conds):
     from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
     boxes = [
@@ -279,7 +399,7 @@ def pipeline(fdir, n_models, n_tasks, n_cwes, n_samples, n_conds):
         ("Automatic judgement of every program",
          "functional test · attack test (dynamic) · Semgrep (static)\nvulnerable = attack verdict where available, otherwise Semgrep verdict"),
         ("Blind audit",
-         "stratified sample of 140 programs and all 63 explanations rated by a scorer\nmodel; ratings then checked informally by the authors"),
+         "stratified sample of 140 programs rated by a scorer model and two authors\nall 63 explanations rated by the scorer model"),
         ("Analysis",
          "H1 residual gap · H2 coupling (fixed effects, mixed model)\nH3–H5 paired condition contrasts, model as the unit"),
     ]

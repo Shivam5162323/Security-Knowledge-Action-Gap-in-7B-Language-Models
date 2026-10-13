@@ -648,6 +648,23 @@ def analyze(run_name: str, make_figures: bool = True) -> dict:
         se = scored["explain"]["rubric_vs_scorer"]
         md.append(f"\nExplanations: {se['n']} scored; Spearman correlation between the scorer and the concept rubric "
                   f"{fmt(se['spearman_rho'])} (permutation p = {fmt_p(se['p'])}).")
+    from .audit_human import human_results
+    human = human_results(run_name)
+    if human:                               # the same sample, rated by people (`python -m skgap sheets --human`)
+        R["human_audit"] = human
+        pairs = [("automatic verdict against scorer", human["automatic_vs_scorer"])] if human["automatic_vs_scorer"] else []
+        pairs += [(f"automatic verdict against rater {r}", v) for r, v in human["automatic_vs_rater"].items()]
+        pairs += [("rater " + k.replace("_", " against rater "), v) for k, v in human["between_raters"].items()]
+        pairs += [(f"scorer against rater {r}", v) for r, v in human["scorer_vs_rater"].items()]
+        hrows = [{"comparison": label, "n": v["n"], "agreement": v["agreement"], "kappa": v["kappa"],
+                  "kappa_lo": v["kappa_ci"][0], "kappa_hi": v["kappa_ci"][1],
+                  "precision": v.get("precision", float("nan")), "recall": v.get("recall", float("nan"))}
+                 for label, v in pairs]
+        table("T27_human_audit", pd.DataFrame(hrows),
+              "The audited sample rated by human raters, blind to model, condition and verdict, beside the scorer's "
+              "audit (95% interval of kappa from a bootstrap within class and automatic verdict; precision and recall "
+              "of the automatic verdict against the scorer or rater). Ratings left as set for all items at once: "
+              + ", ".join(f"rater {r} {n}" for r, n in human["left_as_set_in_bulk"].items()))
 
     # ── power statement ──────────────────────────────────────────────────────
     md.append("\n## 10. Sensitivity of the design\n")

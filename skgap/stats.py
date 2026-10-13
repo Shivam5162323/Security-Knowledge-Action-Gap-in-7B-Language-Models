@@ -134,8 +134,10 @@ def fe_slope(y, x, factors: list, B: int = 5000, seed: int = 0) -> dict:
     nan = {"beta": float("nan"), "p": float("nan"), "t": float("nan"), "n": int(n)}
     if n < D.shape[1] + 3:
         return nan
-    Q, Rm = np.linalg.qr(D)
-    Q = Q[:, np.abs(np.diag(Rm)) > 1e-9]                     # drop aliased dummy columns
+    # Orthonormal basis of the dummies from the SVD. Factors may be aliased (tasks lie within classes); a QR
+    # without pivoting, with the zero-diagonal columns dropped, then no longer spans the whole design.
+    U, sv, _ = np.linalg.svd(D, full_matrices=False)
+    Q = U[:, sv > 1e-9 * sv[0]]
     df = n - Q.shape[1] - 1
     resid = lambda v: v - (v @ Q) @ Q.T                      # noqa: E731  (works on rows of a matrix too)
     x_res, y_res = resid(xv), resid(yv)
